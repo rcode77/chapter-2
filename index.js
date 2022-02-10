@@ -12,6 +12,18 @@ app.use(express.urlencoded({ extended: false }));
 
 const isLogin = true;
 
+const blogs = [
+  {
+    title: "Pasar Coding di Indonesia Dinilai Masih Menjanjikan",
+    content:
+      "Ketimpangan sumber daya manusia (SDM) di sektor digital masih menjadi isu yang belum terpecahkan. Berdasarkan penelitian ManpowerGroup, ketimpangan SDM global, termasuk Indonesia, meningkat dua kali lipat dalam satu dekade terakhir. Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quam, molestiae numquam! Deleniti maiores expedita eaque deserunt quaerat! Dicta, eligendi debitis?",
+    author: "Ichsan Emrald Alamsyah",
+    posted_at: "12 Jul 2021 22:30 WIB",
+  },
+];
+
+let month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "Desember"];
+
 // Set Endpoint
 app.get("/", function (req, res) {
   res.send("Hello World");
@@ -22,7 +34,14 @@ app.get("/home", function (req, res) {
 });
 
 app.get("/blog", function (req, res) {
-  res.render("blog", { isLogin: isLogin });
+  let dataBlogs = blogs.map(function (data) {
+    return {
+      ...data,
+      isLogin: isLogin,
+    };
+  });
+
+  res.render("blog", { isLogin: isLogin, blogs: dataBlogs });
 });
 
 app.get("/add-blog", function (req, res) {
@@ -32,9 +51,18 @@ app.get("/add-blog", function (req, res) {
 app.post("/blog", function (req, res) {
   let title = req.body.title;
   let content = req.body.content;
+  let date = new Date();
 
-  console.log(`Data Title : ${title}`);
-  console.log(`Data Content : ${content}`);
+  let blog = {
+    title: title,
+    content,
+    author: "Ichsan Emrald Alamsyah",
+    posted_at: getFullTime(date),
+  };
+
+  blogs.push(blog);
+
+  res.redirect("/blog");
 });
 
 app.get("/blog/:id", function (req, res) {
@@ -43,6 +71,15 @@ app.get("/blog/:id", function (req, res) {
   console.log(`id dari client ${id}`);
 
   res.render("blog-detail", { id: id });
+});
+
+app.get("/delete-blog/:index", function (req, res) {
+  let index = req.params.index;
+
+  console.log(`Index data : ${index}`);
+
+  blogs.splice(index, 1);
+  res.redirect("/blog");
 });
 
 app.get("/contact-me", function (req, res) {
@@ -54,3 +91,18 @@ const port = 5000;
 app.listen(port, function () {
   console.log(`Server running on port ${port}`);
 });
+
+function getFullTime(time) {
+  let date = time.getDate();
+  let monthIndex = time.getMonth();
+  let year = time.getFullYear();
+
+  let hours = time.getHours();
+  let minutes = time.getMinutes();
+
+  if (minutes < 10) {
+    minutes = `0${minutes}`;
+  }
+
+  return `${date} ${month[monthIndex]} ${year} ${hours}:${minutes} WIB`;
+}
